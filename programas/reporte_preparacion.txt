@@ -1,0 +1,64 @@
+============================================================
+PREPARACIÓN DATASET OCDS
+============================================================
+
+[1] Cargando JSON OCDS...
+  JSON encontrados: 24
+    Procesando: a-01-2025.json
+    Procesando: a-02-2025.json
+    Procesando: a-03-2025.json
+    Procesando: a-04-2025.json
+    Procesando: a-05-2025.json
+    Procesando: a-06-2025.json
+    Procesando: a-07-2025.json
+    Procesando: a-08-2025.json
+    Procesando: a-09-2025.json
+    Procesando: a-10-2025.json
+    Procesando: a-11-2025.json
+    Procesando: a-12-2025.json
+    Procesando: l-01-2025.json
+    Procesando: l-02-2025.json
+    Procesando: l-03-2025.json
+    Procesando: l-04-2025.json
+    Procesando: l-05-2025.json
+    Procesando: l-06-2025.json
+    Procesando: l-07-2025.json
+    Procesando: l-08-2025.json
+    Procesando: l-09-2025.json
+    Procesando: l-10-2025.json
+    Procesando: l-11-2025.json
+    Procesando: l-12-2025.json
+  Filas cargadas : 150,577
+  Columnas       : ['organismo', 'proveedor', 'monto', 'fecha_licitacion', 'fecha_adjudicacion', 'objeto_licitacion', 'estado']
+
+[2] Limpiando datos...
+  [FECHAS] 'fecha_licitacion': 5277 válidas.
+  [FECHAS] 'fecha_adjudicacion': 141149 válidas.
+  Registros tras limpieza: 150,577
+
+[3] Generando muestra...
+
+  Estrategia de muestreo:
+    - 3000 por organismo
+    - 1250 por proveedor
+    - 750 aleatorios
+
+[4] Guardando 'compras_procesadas.csv'...
+
+============================================================
+RESUMEN FINAL
+============================================================
+  Registros originales : 150,577
+  Registros en salida  : 5,000
+
+  Nulos por columna:
+    organismo                :     0 (0.0%)
+    proveedor                :   105 (2.1%)
+    monto                    :   168 (3.4%)
+    fecha_licitacion         :  4949 (99.0%)
+    fecha_adjudicacion       :    96 (1.9%)
+    objeto_licitacion        :    41 (0.8%)
+    estado                   :    64 (1.3%)
+    dias_adjudicacion        :  5000 (100.0%)
+
+✓ Proceso completado.
