@@ -1,0 +1,100 @@
+============================================================
+PREPARACION DATASET OCDS
+============================================================
+
+[1] Cargando y fusionando JSON OCDS...
+  JSON encontrados: 24
+    Indexando licitaciones: a-01-2025.json
+    Indexando licitaciones: a-02-2025.json
+    Indexando licitaciones: a-03-2025.json
+    Indexando licitaciones: a-04-2025.json
+    Indexando licitaciones: a-05-2025.json
+    Indexando licitaciones: a-06-2025.json
+    Indexando licitaciones: a-07-2025.json
+    Indexando licitaciones: a-08-2025.json
+    Indexando licitaciones: a-09-2025.json
+    Indexando licitaciones: a-10-2025.json
+    Indexando licitaciones: a-11-2025.json
+    Indexando licitaciones: a-12-2025.json
+    Indexando licitaciones: l-01-2025.json
+    Indexando licitaciones: l-02-2025.json
+    Indexando licitaciones: l-03-2025.json
+    Indexando licitaciones: l-04-2025.json
+    Indexando licitaciones: l-05-2025.json
+    Indexando licitaciones: l-06-2025.json
+    Indexando licitaciones: l-07-2025.json
+    Indexando licitaciones: l-08-2025.json
+    Indexando licitaciones: l-09-2025.json
+    Indexando licitaciones: l-10-2025.json
+    Indexando licitaciones: l-11-2025.json
+    Indexando licitaciones: l-12-2025.json
+    Fusionando adjudicaciones: a-01-2025.json
+    Fusionando adjudicaciones: a-02-2025.json
+    Fusionando adjudicaciones: a-03-2025.json
+    Fusionando adjudicaciones: a-04-2025.json
+    Fusionando adjudicaciones: a-05-2025.json
+    Fusionando adjudicaciones: a-06-2025.json
+    Fusionando adjudicaciones: a-07-2025.json
+    Fusionando adjudicaciones: a-08-2025.json
+    Fusionando adjudicaciones: a-09-2025.json
+    Fusionando adjudicaciones: a-10-2025.json
+    Fusionando adjudicaciones: a-11-2025.json
+    Fusionando adjudicaciones: a-12-2025.json
+    Fusionando adjudicaciones: l-01-2025.json
+    Fusionando adjudicaciones: l-02-2025.json
+    Fusionando adjudicaciones: l-03-2025.json
+    Fusionando adjudicaciones: l-04-2025.json
+    Fusionando adjudicaciones: l-05-2025.json
+    Fusionando adjudicaciones: l-06-2025.json
+    Fusionando adjudicaciones: l-07-2025.json
+    Fusionando adjudicaciones: l-08-2025.json
+    Fusionando adjudicaciones: l-09-2025.json
+    Fusionando adjudicaciones: l-10-2025.json
+    Fusionando adjudicaciones: l-11-2025.json
+    Fusionando adjudicaciones: l-12-2025.json
+  Releases leidos              : 144,560
+  Releases con datos tender    : 35,502
+  Licitaciones indexadas       : 35,009
+  Releases de adjudicacion     : 105,912
+  Filas de adjudicacion        : 140,144
+  Filas fusionadas por ocid    : 47,895
+  Filas sin tender disponible  : 92,249
+  Filas cargadas : 140,144
+  Columnas       : ['ocid', 'id_licitacion', 'id_adjudicacion', 'organismo', 'proveedor', 'monto', 'moneda', 'fecha_licitacion', 'fecha_adjudicacion', 'objeto_licitacion', 'estado']
+
+[2] Limpiando datos...
+  [FECHAS] 'fecha_licitacion': 47895 validas.
+  [FECHAS] 'fecha_adjudicacion': 140144 validas.
+  [FECHAS] Duraciones negativas descartadas: 460
+  Registros tras limpieza: 140,144
+
+[3] Generando muestra...
+
+  Estrategia de muestreo:
+    - 3000 por organismo
+    - 1250 por proveedor
+    - 750 aleatorios
+
+[4] Guardando 'compras_procesadas.csv'...
+
+============================================================
+RESUMEN FINAL
+============================================================
+  Registros originales : 140,144
+  Registros en salida  : 5,000
+
+  Nulos por columna:
+    ocid                     :     0 (0.0%)
+    id_licitacion            :  3831 (76.6%)
+    id_adjudicacion          :     0 (0.0%)
+    organismo                :     3 (0.1%)
+    proveedor                :     0 (0.0%)
+    monto                    :    64 (1.3%)
+    moneda                   :   239 (4.8%)
+    fecha_licitacion         :  3831 (76.6%)
+    fecha_adjudicacion       :     0 (0.0%)
+    objeto_licitacion        :     0 (0.0%)
+    estado                   :     0 (0.0%)
+    dias_adjudicacion        :  3838 (76.8%)
+
+OK - Proceso completado.
