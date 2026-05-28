@@ -46,7 +46,7 @@ alta_concentracion(O, P) <= (
 )
 
 #consulta
-#print(alta_concentracion(O, P))
+# print(alta_concentracion(O, P))
 
 #endregion
 
