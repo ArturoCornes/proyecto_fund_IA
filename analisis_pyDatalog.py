@@ -67,7 +67,7 @@ pyDatalog.create_terms(
 )
 
 #regla
-adjudicacion_repetida(O, P) <= (adjudicaciones_proveedor_org[O, P] > 3)
+adjudicacion_repetida(O, P) <= (adjudicaciones_proveedor_org[O, P] > 1)
 
 #consulta
 #print(adjudicaciones_proveedor_org[O, P] == C)
