@@ -15,6 +15,9 @@ pyDatalog.create_terms('X, P, O, N, C,compra_grande,proveedor_frecuente, cantida
 # regla
 proveedor_frecuente(P) <= (cantidad_adjudicaciones[P] > 10)
 
+def get_provedores_frecuentes():
+    """returns P:~iterable"""
+    return proveedor_frecuente(P)
 #endregion
 
 #region Alta concentracion
@@ -45,6 +48,10 @@ alta_concentracion(O, P) <= (
     / adjudicaciones_org[O] > 40
 )
 
+def get_orgs_con_alta_concentracion():
+    """returns O and P: ~iterables"""
+    return alta_concentracion(O, P)
+
 #consulta
 # print(alta_concentracion(O, P))
 
@@ -69,8 +76,21 @@ pyDatalog.create_terms(
 #regla
 adjudicacion_repetida(O, P) <= (adjudicaciones_proveedor_org[O, P] > 3)
 
+def get_orgs_con_adjudicacion_repetida():
+    """returns O and P: ~iterables"""
+    return adjudicacion_repetida(O, P)
+
 #consulta
 #print(adjudicaciones_proveedor_org[O, P] == C)
-
 #endregion
 
+#region DemoraAdjudicion
+pyDatalog.create_terms("media_dias, Dias, ID")
+(media_dias[None] == mean_(Dias, for_each=ID)) <= (
+    (compra[ID]) & (dias_adj_de[ID] == Dias) & (Dias != None)
+    ) 
+
+def get_media_dias():
+    """returns O and P: ~iterables"""
+    return media_dias[None]
+# endregion

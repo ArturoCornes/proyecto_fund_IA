@@ -36,6 +36,8 @@ alerta_sobretiempo(Organismo, Proveedor, Tiempo, PromedioGeneral) :-
     PromedioGeneral > 0,
     Tiempo > PromedioGeneral * Factor.
 
+
+% rec audit
 recomendar_auditoria(Organismo) :-
     recomendar_auditoria(Organismo, _, _).
 
