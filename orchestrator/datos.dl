@@ -1,0 +1,8 @@
++ transaccion("tx_001", "juan", 15000)
++ transaccion("tx_002", "maria", 500)
++ transaccion("tx_003", "pedro", 65000)
++ transaccion("tx_004", "juan", 200)
++ transaccion("tx_005", "lucia", 9000)
+
++ cuenta_sospechosa("juan")
++ cuenta_sospechosa("carlos")

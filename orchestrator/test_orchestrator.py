@@ -21,23 +21,18 @@ class TestOrchestrator(unittest.TestCase):
         pydatalog_stage = Stage(
             name="extract_data",
             engine="pydatalog",
-            rule_file="datos_datalog.py",
-            queries=[Query("extraer_datos_para_prolog")],
+            rule_file="datos.dl",
+            queries=[
+                Query("transaccion(Tx, Usuario, Monto)"),
+                Query("cuenta_sospechosa(Usuario)")
+            ],
             outputs=[],
             depends_on=[]
         )
 
         # --- Stage 2: Prolog (fraud detection) ---
-        # Facts produced by PyDatalog will be added to Prolog KB
-        prolog_outputs = [
-            Fact("transaccion", "tx_001", "juan", 15000),
-            Fact("transaccion", "tx_002", "maria", 500),
-            Fact("transaccion", "tx_003", "pedro", 65000),
-            Fact("transaccion", "tx_004", "juan", 200),
-            Fact("transaccion", "tx_005", "lucia", 9000),
-            Fact("cuenta_sospechosa", "juan"),
-            Fact("cuenta_sospechosa", "carlos"),
-        ]
+        # Facts produced by PyDatalog will be added to Prolog KB automatically via pipeline
+        prolog_outputs = []
 
         prolog_stage = Stage(
             name="detect_fraud",
@@ -59,31 +54,26 @@ class TestOrchestrator(unittest.TestCase):
         # --- Assertions ---
         self.assertEqual(len(results), 2, "Pipeline should return results for both stages")
 
-        # PyDatalog stage should have returned the extracted data dict
-        pydatalog_result = results[0]
-        self.assertIsNotNone(pydatalog_result)
-        print("\n=== PyDatalog Result ===")
-        print(pydatalog_result)
+        # PyDatalog stage should have returned a KnowledgeSet
+        pydatalog_ks = results[0]
+        self.assertIsNotNone(pydatalog_ks)
+        print("\n=== PyDatalog KnowledgeSet ===")
+        print(pydatalog_ks)
 
-        # Prolog stage should have found fraud alerts
-        prolog_result = results[1]
-        self.assertGreater(len(prolog_result), 0, "Prolog should detect at least one fraud alert")
+        # Prolog stage should have returned a KnowledgeSet of fraud alerts
+        prolog_ks = results[1]
+        self.assertIsNotNone(prolog_ks)
 
-        print("\n=== Prolog Fraud Alerts ===")
-        for query_result in prolog_result:
-            print(query_result)
+        print("\n=== Prolog Fraud Alerts KnowledgeSet ===")
+        print(prolog_ks)
 
-        # Verify expected fraud detections
-        all_alerts = []
-        for qr in prolog_result:
-            if qr.return_val:
-                for alert in qr.return_val:
-                    all_alerts.append(alert)
+        # Verify expected fraud detections in the KnowledgeSet under "alerta_fraude"
+        alerts = prolog_ks.facts.get("alerta_fraude", [])
+        
+        self.assertGreater(len(alerts), 0, "Prolog should detect at least one fraud alert")
 
-        # tx_001 (juan, $15000) -> "Monto alto en cuenta sospechosa" (juan is suspicious, > 10k)
-        # tx_003 (pedro, $65000) -> "Transaccion masiva - Posible lavado" (> 50k)
-        # tx_004 (juan, $200) -> "Movimiento de cuenta en vigilancia" (juan is suspicious, <= 10k)
-        alert_messages = [a.get("Alerta", "") for a in all_alerts]
+        # In KnowledgeSet, alerts are tuples of (TxID, Usuario, Alerta)
+        alert_messages = [a[2] for a in alerts]
 
         self.assertTrue(
             any("Monto alto en cuenta sospechosa" in msg for msg in alert_messages),
@@ -102,6 +92,17 @@ class TestOrchestrator(unittest.TestCase):
         for msg in alert_messages:
             print(f"  - {msg}")
 
+    def test_circular_dependency(self):
+        stage1 = Stage("S1", "pydatalog", None, [], [], [])
+        stage2 = Stage("S2", "pydatalog", None, [], [], [stage1])
+        stage1.depends_on.append(stage2) # Create cycle
+        
+        pipeline = Pipeline()
+        pipeline.add_stage(stage1)
+        pipeline.add_stage(stage2)
+        
+        with self.assertRaises(RecursionError):
+            self.orchestrator.run_pipeline(pipeline)
 
 if __name__ == "__main__":
     unittest.main()

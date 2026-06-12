@@ -1,3 +1,4 @@
+from __future__ import annotations
 from PrologWrapper import Query, Fact
 
 class Pipeline:

@@ -58,6 +58,16 @@ class PrologWrapper:
         
         list(self.prolog.query(f"{command}(({target}))"))
     
+    def decode_bytes(self, obj):
+        """Recursively decode byte strings to utf-8 strings."""
+        if isinstance(obj, bytes):
+            return obj.decode('utf-8')
+        elif isinstance(obj, dict):
+            return {k: self.decode_bytes(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self.decode_bytes(i) for i in obj]
+        return obj
+
     def query(self, query: str | Query) -> Query:
         """
         Performs a query to the knowledge base.
@@ -68,7 +78,8 @@ class PrologWrapper:
         if isinstance(query, str):
             query = Query(query)
 
-        query.return_val = list(self.prolog.query(query.query_str)) 
+        raw_results = list(self.prolog.query(query.query_str))
+        query.return_val = self.decode_bytes(raw_results) 
         self.queries.append(query)
         return query
     

@@ -1,50 +1,47 @@
 from pyDatalog import pyDatalog
 from pathlib import Path
+import re
+from KnowledgeSet import KnowledgeSet
 
 class PyDatalogWrapper:
+    def __init__(self):
+        # We will keep track of queries
+        pass
+
     def load_pydatalog_file(self, file_path):
-        path =  Path(file_path)
-        self.module = dynamic_import(path)
-
-    def query(self, func_name: str, *args, **kwargs):
-        if not self.module:
-            raise RuntimeError("No module loaded.")
+        path = Path(file_path)
+        content = path.read_text(encoding='utf-8')
+        
+        # PyDatalog requires terms to be created globally before they are used.
+        # We extract all words to conservatively create terms for everything.
+        words = re.findall(r'\b[A-Za-z_]\w*\b', content)
+        terms = list(set(words))
+        if terms:
+            pyDatalog.create_terms(", ".join(terms))
             
-        try:
-            # 1. Safely retrieve the actual function object from the module
-            func_obj = getattr(self.module, func_name)
-        except AttributeError:
-            raise ValueError(f"Function '{func_name}' not found in the loaded module.")
+        pyDatalog.load(content)
+
+    def query(self, query_str: str) -> KnowledgeSet:
+        """
+        Executes a query and returns a KnowledgeSet containing the results.
+        """
+        # Ensure query terms are also created
+        words = re.findall(r'\b[A-Za-z_]\w*\b', query_str)
+        terms = list(set(words))
+        if terms:
+            pyDatalog.create_terms(", ".join(terms))
+            
+        answer = pyDatalog.ask(query_str)
         
-        # 2. Call it directly and return its output
-        return func_obj(*args, **kwargs)
-
-
-# written by AI:
-import importlib.util
-import sys
-from pathlib import Path
-
-def dynamic_import(file_path: str, module_name: str = "dynamic_mod"):
-    path = Path(file_path)
-    
-    # 1. Create a module spec from the file path
-    spec = importlib.util.spec_from_file_location(module_name, path)
-    if spec is None:
-        raise ImportError(f"Could not load spec for {file_path}")
+        # Parse predicate name from query_str (e.g. "transaccion(X, Y, Z)" -> "transaccion")
+        predicate = query_str.split('(')[0].strip()
         
-    # 2. Create a new module based on the spec
-    module = importlib.util.module_from_spec(spec)
-    
-    # 3. Optional: Add it to sys.modules so imports inside the file work correctly
-    sys.modules[module_name] = module
-    
-    # 4. Execute the module to populate its attributes/functions
-    spec.loader.exec_module(module)
-    
-    return module
-
-if __name__ == "__main__":
-    wpr = PyDatalogWrapper()
-    wpr.load_pydatalog_file("datos_datalog.py")
-    wpr.query("extraer_datos_para_prolog")
+        ks = KnowledgeSet()
+        if answer and answer.answers:
+            for row in answer.answers:
+                # Answer rows are tuples
+                if isinstance(row, tuple):
+                    ks.add_fact(predicate, *row)
+                else:
+                    ks.add_fact(predicate, row)
+        return ks
