@@ -15,10 +15,13 @@ pyDatalog.create_terms('X, P, O, N, C,compra_grande,proveedor_frecuente, cantida
 # regla
 proveedor_frecuente(P) <= (cantidad_adjudicaciones[P] > 10)
 
-def get_provedores_frecuentes():
-    """returns P:~iterable"""
-    return proveedor_frecuente(P)
+
+
+
 #endregion
+
+
+
 
 #region 2) Alta concentracion
 
@@ -48,14 +51,15 @@ alta_concentracion(O, P) <= (
     / adjudicaciones_org[O] > 40
 )
 
-def get_orgs_con_alta_concentracion():
-    """returns O and P: ~iterables"""
-    return alta_concentracion(O, P)
+
 
 #consulta
 # print(alta_concentracion(O, P))
 
 #endregion
+
+
+
 
 #region 3) Adjudicacion Repetida
 pyDatalog.create_terms(
@@ -65,15 +69,13 @@ pyDatalog.create_terms(
     '''
 )
 
-
-#regla
-#cambiar nombre a proveedor_recurrente
 adjudicacion_repetida(O, P) <= (adjudicaciones_proveedor_org[O, P] > 3)
 
-#consulta
-#print(adjudicaciones_proveedor_org[O, P] == C)
 
 #endregion
+
+
+
 
 #region 4) organismos con baja cantidad de distintos proveedores
 
@@ -95,6 +97,8 @@ cantidad_proveedores_org
 #endregion
 
 
+
+
 #region 5) proveedores exclusivos
 
 pyDatalog.create_terms('''
@@ -110,25 +114,117 @@ proveedor_exclusivo
     organismo_de[X] == O
 )
 
-proveedor_exclusivo(P) <= (
-    cant_organismos_proveedor[P] == 1
+proveedor_exclusivo(P, O) <= (
+    (cant_organismos_proveedor[P] == 1) &
+    (proveedor_de[X] == P) &
+    (organismo_de[X] == O)
 )
+
 
 #endregion
 
 
-def get_orgs_con_adjudicacion_repetida():
-    """returns O and P: ~iterables"""
-    return adjudicacion_repetida(O, P)
 
 
-#region DemoraAdjudicion
-pyDatalog.create_terms("media_dias, Dias, ID")
-(media_dias[None] == mean_(Dias, for_each=ID)) <= (
-    (compra[ID]) & (dias_adj_de[ID] == Dias) & (Dias != None)
-    ) 
+#region 6) Proveedor dominantes en la Organizacion
 
-def get_media_dias():
-    """returns O and P: ~iterables"""
-    return media_dias[None]
-# endregion
+pyDatalog.create_terms('''
+X, O, P,
+cantidad_adjudicaciones_org,
+porcentaje_adjudicaciones,
+proveedor_dominante
+''')
+
+(cantidad_adjudicaciones_org[O] == len_(X)) <= (organismo_de[X] == O)
+
+(porcentaje_adjudicaciones[O, P] ==
+    (adjudicaciones_proveedor_org[O, P] * 100.0) /
+    cantidad_adjudicaciones_org[O]
+)
+
+
+pyDatalog.create_terms('N,T,Porcentaje')
+(porcentaje_adjudicaciones[O,P] == Porcentaje) <= (
+    (adjudicaciones_proveedor_org[O,P] == N) &
+    (cantidad_adjudicaciones_org[O] == T) &
+    (Porcentaje == (N * 100.0) / T)
+)
+
+
+
+#endregion
+
+
+#region 7) cantidad de organizaciones al que brinda cada proveedor
+
+pyDatalog.create_terms('''
+X,O,P,N,
+cantidad_organismos_proveedor,
+proveedor_ubicuo,
+cantidad_total_organismos
+''')
+
+(cantidad_organismos_proveedor[P] == len_(O)) <= (
+    proveedor_de[X] == P
+) & (
+    organismo_de[X] == O
+) & (
+    P != 'NAN'
+)
+
+(cantidad_total_organismos[None] == len_(O)) <= (
+    organismo_de[X] == O
+)
+
+pyDatalog.create_terms('Total, Cant, Porcentaje, cobertura_organismos,proveedor_muy_extendido')
+
+(cobertura_organismos[P] == Porcentaje) <= (
+    (cantidad_organismos_proveedor[P] == Cant) &
+    (cantidad_total_organismos[None] == Total) &
+    (Porcentaje == (Cant * 100.0) / Total)
+)
+
+proveedor_muy_extendido(P) <= (
+    (cobertura_organismos[P] == Porcentaje) &
+    (Porcentaje > 25)
+)
+
+
+
+#endregion
+
+
+
+
+#region 8) Proveedores con % de datos faltantes en dias_adj_de
+pyDatalog.create_terms('''
+X,Y, P,
+total_adj_proveedor,
+adj_sin_dias_proveedor,
+porcentaje_faltantes_proveedor,
+Total,
+Faltantes,
+Porcentaje
+''')
+
+# Total de adjudicaciones del proveedor
+(total_adj_proveedor[P] == len_(X)) <= (
+    proveedor_de[X] == P
+)
+
+# Adjudicaciones sin dias_adj
+(adj_sin_dias_proveedor[P] == len_(X)) <= (
+    (proveedor_de[X] == P) &
+    (dias_adj_de[X] == None)
+)
+
+# Porcentaje de faltantes
+(porcentaje_faltantes_proveedor[P] == Porcentaje) <= (
+    (total_adj_proveedor[P] == Total) &
+    (adj_sin_dias_proveedor[P] == Faltantes) &
+    (Porcentaje == (Faltantes * 100.0) / Total)
+)
+
+
+#endregion
+
