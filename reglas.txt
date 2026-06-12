@@ -1,0 +1,10 @@
+regla 4) organismos con baja cantidad de distintos proveedores
+usand la cantidad de proveedores en el organismo (cantidad_proveedores_org[O]).
+se lo manda a prolog y prolog podria ver casos en los que la cantidad de proveedores son muy pocos, ya que
+en caso de tener pocos proveedores, significa que tiene mucha dependencia a ellos
+
+regla 5) Proveedores exclusivos
+esto no se realmente que se puede hacer en prolog, pero me parecia que ver cuantos organismos tienen proveedores exclusivos,
+o si ninguno tiene, puede ser un dato interesante para mostrar
+
+
