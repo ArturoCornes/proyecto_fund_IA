@@ -4,7 +4,7 @@ from hechos_datalog import *
 #cargar hechos en memoria
 cargar_hechos()
 
-#region Proveedor Frecuente
+#region 1) Proveedor Frecuente
 #crear términos nuevos
 pyDatalog.create_terms('X, P, O, N, C,compra_grande,proveedor_frecuente, cantidad_adjudicaciones')
 
@@ -20,7 +20,7 @@ def get_provedores_frecuentes():
     return proveedor_frecuente(P)
 #endregion
 
-#region Alta concentracion
+#region 2) Alta concentracion
 
 pyDatalog.create_terms(
     '''
@@ -57,32 +57,70 @@ def get_orgs_con_alta_concentracion():
 
 #endregion
 
-#region Adjudicacion Repetida
+#region 3) Adjudicacion Repetida
 pyDatalog.create_terms(
     '''
-    X, O, P, C,
-    adjudicaciones_proveedor_org,
+    O, P,
     adjudicacion_repetida
     '''
 )
 
-#funcion
-(adjudicaciones_proveedor_org[O, P] == len_(X)) <= (
-    (organismo_de[X] == O) &
-    (proveedor_de[X] == P) &
-    (P != 'NAN')
-)
 
 #regla
+#cambiar nombre a proveedor_recurrente
 adjudicacion_repetida(O, P) <= (adjudicaciones_proveedor_org[O, P] > 3)
+
+#consulta
+#print(adjudicaciones_proveedor_org[O, P] == C)
+
+#endregion
+
+#region 4) organismos con baja cantidad de distintos proveedores
+
+pyDatalog.create_terms('''
+X, O, P,
+cantidad_proveedores_org                       
+''')
+
+
+# Cantidad de proveedores distintos del organismo
+(cantidad_proveedores_org[O] == len_(P)) <= (
+    organismo_de[X] == O
+) & (
+    proveedor_de[X] == P
+) & (
+    P != 'NAN'
+)
+
+#endregion
+
+
+#region 5) proveedores exclusivos
+
+pyDatalog.create_terms('''
+X, O, P,
+cant_organismos_proveedor,
+proveedor_exclusivo                       
+''')
+
+
+(cant_organismos_proveedor[P] == len_(O)) <= (
+    proveedor_de[X] == P
+) & (
+    organismo_de[X] == O
+)
+
+proveedor_exclusivo(P) <= (
+    cant_organismos_proveedor[P] == 1
+)
+
+#endregion
+
 
 def get_orgs_con_adjudicacion_repetida():
     """returns O and P: ~iterables"""
     return adjudicacion_repetida(O, P)
 
-#consulta
-#print(adjudicaciones_proveedor_org[O, P] == C)
-#endregion
 
 #region DemoraAdjudicion
 pyDatalog.create_terms("media_dias, Dias, ID")
