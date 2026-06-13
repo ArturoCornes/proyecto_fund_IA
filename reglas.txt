@@ -19,3 +19,13 @@ regla 7) cantidad de organizaciones al que brinda cada proveedor
 
 regla 8) Proveedores con % de datos faltantes en dias_adj_de
 (porcentaje_faltantes_proveedor[P] == Porcentaje) brinda el % de datos faltantes en dias_adj_de por proveedores
+
+regla 9) Gastos de Organismo
+(gasto_total_organismo[O] == M) brinda elgasto total de los organismos, esto sirve para saber quienes gastan tanto y para
+ver si hay alguna que sea extremadamente alto o baja
+
+regla 10) Concentracion economica del organismo en un proveedor
+(porcentaje_monto_proveedor[O,P] == PorcentajeMonto) muestra el % de concentracion economica que tiene los proveedores de un
+organismo en especifico, permitiendo hacer regla de que hay un riesgo si se encuentra mucha concentracion en un solo proveedor
+o no necesariamente un riesgo sino que puede ser data imporante
+

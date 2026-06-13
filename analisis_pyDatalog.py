@@ -228,3 +228,65 @@ Porcentaje
 
 #endregion
 
+
+#region 9) Gastos de Organismo
+
+pyDatalog.create_terms('''
+X, O, M,
+gasto_total_organismo
+''')
+
+
+(gasto_total_organismo[O] == sum_(M, for_each=X)) <= (
+    (organismo_de[X] == O) &
+    (monto_de[X] == M) &
+    (M != None)
+)
+
+
+
+#endregion*
+
+
+#region 10) Concentracion economica del organismo en un proveedor
+
+pyDatalog.create_terms('''
+X,O,P,M,
+monto_total_organismo
+''')
+
+(monto_total_organismo[O] == sum_(M, for_each=X)) <= (
+    (organismo_de[X] == O) &
+    (monto_de[X] == M) &
+    (M != None)
+)
+
+pyDatalog.create_terms('''
+monto_proveedor_organismo
+''')
+
+(monto_proveedor_organismo[O,P] == sum_(M, for_each=X)) <= (
+    (organismo_de[X] == O) &
+    (proveedor_de[X] == P) &
+    (monto_de[X] == M) &
+    (M != None)
+)
+
+
+pyDatalog.create_terms('''
+TotalMonto,
+MontoProveedor,
+PorcentajeMonto,
+porcentaje_monto_proveedor
+''')
+
+(porcentaje_monto_proveedor[O,P] == PorcentajeMonto) <= (
+    (monto_total_organismo[O] == TotalMonto) &
+    (monto_proveedor_organismo[O,P] == MontoProveedor) &
+    (PorcentajeMonto == (MontoProveedor * 100.0) / TotalMonto)
+)
+
+#endregion
+
+
+
