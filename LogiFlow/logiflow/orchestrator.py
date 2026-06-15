@@ -1,7 +1,7 @@
-from Pipeline import Pipeline, Stage
-from PrologWrapper import PrologWrapper, Query, Fact
-from PyDatalogWrapper import PyDatalogWrapper
-
+from .pipeline import Pipeline, Stage
+from .prolog_wrapper import PrologWrapper, Query, Fact
+from .pydatalog_wrapper import PyDatalogWrapper
+from pyDatalog import pyDatalog
 
 class Orchestrator:
 
@@ -41,6 +41,7 @@ class Orchestrator:
 
     def run_pipeline(self, pipeline):
         """Execute all pipeline stages in dependency order, collecting outputs."""
+        pyDatalog.clear()
         all_stages = pipeline.get_stages()
         
         # 1. Circular dependency detection (Topological check)
@@ -64,7 +65,7 @@ class Orchestrator:
         # 2. Execution
         executed = set()
         stage_results = {}
-        from KnowledgeSet import KnowledgeSet
+        from .knowledge_set import KnowledgeSet
         
         def execute_stage(stage: Stage) -> KnowledgeSet:
             # Execute dependencies first
@@ -111,7 +112,7 @@ class Orchestrator:
             
         # Ingest data from upstream KnowledgeSet
         if merged_input:
-            from PrologWrapper import Fact
+            from .prolog_wrapper import Fact
             for predicate, rows in merged_input.facts.items():
                 for row in rows:
                     if isinstance(row, tuple):
@@ -119,7 +120,7 @@ class Orchestrator:
                     else:
                         self._prologw.add_fact(Fact(predicate, row))
             
-        from KnowledgeSet import KnowledgeSet
+        from .knowledge_set import KnowledgeSet
         output_ks = KnowledgeSet()
         
         for query in stage.queries:
@@ -144,7 +145,7 @@ class Orchestrator:
         
         # We could also inject merged_input into PyDatalog here if required.
         
-        from KnowledgeSet import KnowledgeSet
+        from .knowledge_set import KnowledgeSet
         output_ks = KnowledgeSet()
         
         for query in stage.queries:

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from PrologWrapper import Query, Fact
+from .prolog_wrapper import Query, Fact
 
 class Pipeline:
     def __init__(self):

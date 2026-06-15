@@ -1,8 +1,9 @@
 import unittest
-from Pipeline import Pipeline, Stage
-from PrologWrapper import Query, Fact
-from PyDatalogWrapper import PyDatalogWrapper
-from Orchestrator import Orchestrator
+from pathlib import Path
+
+from logiflow import Orchestrator, Pipeline, Stage, Query, Fact
+
+_TEST_DIR = Path(__file__).resolve().parent
 
 
 class TestOrchestrator(unittest.TestCase):
@@ -21,7 +22,7 @@ class TestOrchestrator(unittest.TestCase):
         pydatalog_stage = Stage(
             name="extract_data",
             engine="pydatalog",
-            rule_file="datos.dl",
+            rule_file=str(_TEST_DIR / "datos.dl"),
             queries=[
                 Query("transaccion(Tx, Usuario, Monto)"),
                 Query("cuenta_sospechosa(Usuario)")
@@ -37,7 +38,7 @@ class TestOrchestrator(unittest.TestCase):
         prolog_stage = Stage(
             name="detect_fraud",
             engine="prolog",
-            rule_file="reglas.pl",
+            rule_file=str(_TEST_DIR / "reglas.pl"),
             queries=[
                 Query("alerta_fraude(TxID, Usuario, Alerta)"),
             ],

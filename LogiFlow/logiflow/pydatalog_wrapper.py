@@ -1,7 +1,7 @@
 from pyDatalog import pyDatalog
 from pathlib import Path
 import re
-from KnowledgeSet import KnowledgeSet
+from .knowledge_set import KnowledgeSet
 
 class PyDatalogWrapper:
     def __init__(self):

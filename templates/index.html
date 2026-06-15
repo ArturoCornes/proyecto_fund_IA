@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UY-CompraTracker — Panel de Análisis Simbólico</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <span class="logo-icon">⚖️</span>
+                <h1>UY-CompraTracker</h1>
+            </div>
+            <p class="subtitle">Panel de Análisis Simbólico — Detección de Patrones en Compras Públicas</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="pipeline-grid" id="pipelineGrid"></section>
+
+        <section class="results-section hidden" id="resultsSection">
+            <div class="results-header">
+                <h2 id="resultsTitle"></h2>
+                <span class="timestamp" id="resultsTimestamp"></span>
+                <button class="btn btn-secondary" onclick="clearResults()">Limpiar Resultados</button>
+            </div>
+
+            <div class="pipeline-info-card hidden" id="pipelineInfoCard">
+                <h3>Descripción del Pipeline</h3>
+                <p id="pipelineDescription"></p>
+            </div>
+
+            <div class="tabs-container" id="tabsContainer"></div>
+        </section>
+    </main>
+
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Ejecutando pipeline...</p>
+    </div>
+
+    <div class="toast hidden" id="errorToast"></div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

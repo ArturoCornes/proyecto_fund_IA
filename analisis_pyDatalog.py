@@ -1,9 +1,3 @@
-from pyDatalog import pyDatalog
-from hechos_datalog import *
-
-#cargar hechos en memoria
-cargar_hechos()
-
 #region 1) Proveedor Frecuente
 #crear términos nuevos
 pyDatalog.create_terms('X, P, O, N, C,compra_grande,proveedor_frecuente, cantidad_adjudicaciones')
@@ -15,13 +9,7 @@ pyDatalog.create_terms('X, P, O, N, C,compra_grande,proveedor_frecuente, cantida
 # regla
 proveedor_frecuente(P) <= (cantidad_adjudicaciones[P] > 10)
 
-
-
-
 #endregion
-
-
-
 
 #region 2) Alta concentracion
 
@@ -52,14 +40,10 @@ alta_concentracion(O, P) <= (
 )
 
 
-
 #consulta
 # print(alta_concentracion(O, P))
 
 #endregion
-
-
-
 
 #region 3) Adjudicacion Repetida
 pyDatalog.create_terms(
@@ -69,13 +53,18 @@ pyDatalog.create_terms(
     '''
 )
 
+
+#regla
+#cambiar nombre a proveedor_recurrente
 adjudicacion_repetida(O, P) <= (adjudicaciones_proveedor_org[O, P] > 3)
 
+#mask for prolog compatibility
+adjudica(O, P, C) <= (adjudicaciones_proveedor_org[O, P] == C)
+
+#consulta
+#print(adjudicaciones_proveedor_org[O, P] == C)
 
 #endregion
-
-
-
 
 #region 4) organismos con baja cantidad de distintos proveedores
 
@@ -94,9 +83,10 @@ cantidad_proveedores_org
     P != 'NAN'
 )
 
+#mask for prolog compatibility
+total_adjudicaciones(O, C) <= (cantidad_proveedores_org[O] == C)
+
 #endregion
-
-
 
 
 #region 5) proveedores exclusivos
@@ -114,17 +104,11 @@ proveedor_exclusivo
     organismo_de[X] == O
 )
 
-proveedor_exclusivo(P, O) <= (
-    (cant_organismos_proveedor[P] == 1) &
-    (proveedor_de[X] == P) &
-    (organismo_de[X] == O)
+proveedor_exclusivo(P) <= (
+    cant_organismos_proveedor[P] == 1
 )
 
-
 #endregion
-
-
-
 
 #region 6) Proveedor dominantes en la Organizacion
 
@@ -290,3 +274,60 @@ porcentaje_monto_proveedor
 
 
 
+# region 11) dias adjudicacion
+pyDatalog.create_terms('''
+    X, O, P, D, S,
+    suma_dias_op, 
+    cant_adjudicaciones_op, 
+    tiempo_de_adjudicacion,
+    suma_dias_op,
+    TiempoPromedio
+''')
+
+(suma_dias_op[O, P] == sum_(D, for_each=X)) <= (
+    (organismo_de[X] == O) &
+    (proveedor_de[X] == P) &
+    (dias_adj_de[X] == D) &
+    (D != None)
+)
+
+(cant_adjudicaciones_op[O, P] == len_(X)) <= (
+    (organismo_de[X] == O) &
+    (proveedor_de[X] == P) &
+    (dias_adj_de[X] != None)
+)
+
+tiempo_de_adjudicacion(O, P, TiempoPromedio) <= (
+    (suma_dias_op[O, P] == S) &
+    (cant_adjudicaciones_op[O, P] == C) &
+    (C > 0) & 
+    (TiempoPromedio == S / C)
+)
+
+#endregion
+
+#region 12) promedio general dias adj
+
+pyDatalog.create_terms('''
+    X, D, S, C,
+    total_dias_global, 
+    cant_adjudicaciones_global, 
+    promedio_general_tiempo_adjudicaciones,
+    PromedioGeneral
+''')
+
+(total_dias_global[None] == sum_(D, for_each=X)) <= (
+    (dias_adj_de[X] == D) &
+    (D != None)
+)
+
+(cant_adjudicaciones_global[None] == len_(X)) <= (
+    (dias_adj_de[X] != None)
+)
+
+promedio_general_tiempo_adjudicaciones(PromedioGeneral) <= (
+    (total_dias_global[None] == S) &
+    (cant_adjudicaciones_global[None] == C) &
+    (C > 0) &
+    (PromedioGeneral == S / C)
+)
