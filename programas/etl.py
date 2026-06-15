@@ -246,12 +246,9 @@ def exportar_hechos(conn: sqlite3.Connection, ruta_salida: str) -> None:
     filas = cursor.fetchall()
 
     with open(ruta_salida, "w", encoding="utf-8") as f:
-        f.write('"""\n')
-        f.write("hechos_datalog.py\n")
-        f.write("Generado automaticamente por etl.py\n")
-        f.write(f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write('"""\n\n')
-        f.write("from pyDatalog import pyDatalog\n\n")
+        f.write("#hechos_datalog.py\n")
+        f.write("#Generado automaticamente por etl.py\n")
+        f.write(f"#Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write(
             "pyDatalog.create_terms('"
             "compra, ocid_de, licitacion_de, adjudicacion_de, "
@@ -260,9 +257,6 @@ def exportar_hechos(conn: sqlite3.Connection, ruta_salida: str) -> None:
             "dias_adj_de, estado_de"
             "')\n\n"
         )
-        f.write("def cargar_hechos():\n")
-        f.write('    """Carga todos los hechos en el motor pyDatalog."""\n\n')
-
         for fila in filas:
             (
                 id_,
@@ -279,18 +273,18 @@ def exportar_hechos(conn: sqlite3.Connection, ruta_salida: str) -> None:
                 estado,
             ) = fila
 
-            f.write(f"    +(compra[{id_}])\n")
-            f.write(f"    + (ocid_de[{id_}]                 == {literal_texto(ocid)})\n")
-            f.write(f"    + (licitacion_de[{id_}]           == {literal_texto(id_lic)})\n")
-            f.write(f"    + (adjudicacion_de[{id_}]         == {literal_texto(id_adj)})\n")
-            f.write(f"    + (organismo_de[{id_}]            == {literal_texto(org)})\n")
-            f.write(f"    + (proveedor_de[{id_}]            == {literal_texto(prov)})\n")
-            f.write(f"    + (monto_de[{id_}]                == {literal_numero(monto)})\n")
-            f.write(f"    + (moneda_de[{id_}]               == {literal_texto(moneda)})\n")
-            f.write(f"    + (fecha_licitacion_de[{id_}]     == {literal_texto(fecha_lic)})\n")
-            f.write(f"    + (fecha_adjudicacion_de[{id_}]   == {literal_texto(fecha_adj)})\n")
-            f.write(f"    + (dias_adj_de[{id_}]             == {literal_numero(dias)})\n")
-            f.write(f"    + (estado_de[{id_}]               == {literal_texto(estado)})\n")
+            f.write(f"+(compra[{id_}])\n")
+            f.write(f"+ (ocid_de[{id_}]                 == {literal_texto(ocid)})\n")
+            f.write(f"+ (licitacion_de[{id_}]           == {literal_texto(id_lic)})\n")
+            f.write(f"+ (adjudicacion_de[{id_}]         == {literal_texto(id_adj)})\n")
+            f.write(f"+ (organismo_de[{id_}]            == {literal_texto(org)})\n")
+            f.write(f"+ (proveedor_de[{id_}]            == {literal_texto(prov)})\n")
+            f.write(f"+ (monto_de[{id_}]                == {literal_numero(monto)})\n")
+            f.write(f"+ (moneda_de[{id_}]               == {literal_texto(moneda)})\n")
+            f.write(f"+ (fecha_licitacion_de[{id_}]     == {literal_texto(fecha_lic)})\n")
+            f.write(f"+ (fecha_adjudicacion_de[{id_}]   == {literal_texto(fecha_adj)})\n")
+            f.write(f"+ (dias_adj_de[{id_}]             == {literal_numero(dias)})\n")
+            f.write(f"+ (estado_de[{id_}]               == {literal_texto(estado)})\n")
             f.write("\n")
 
     print(f"[OK] Hechos exportados: {ruta_salida} ({len(filas):,} registros)")
