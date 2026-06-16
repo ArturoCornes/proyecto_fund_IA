@@ -99,6 +99,19 @@ PIPELINE_REGISTRY = {
         "engine": "pydatalog",
         "stage_names": ["load_data", "analyze_coverage_data_quality"],
     },
+    "pipeline_07_gasto_por_proveedor": {
+        "title": "Ranking de Gasto Total por Proveedor",
+        "description": (
+            "Calcula la suma total de montos adjudicados a cada proveedor (en UYU) "
+            "y presenta el ranking de mayor a menor. Permite identificar qué empresas "
+            "concentran el mayor volumen de gasto público."
+        ),
+        "rules": [
+            "gasto_total_proveedor[P] == X — Suma de montos adjudicados por proveedor (UYU)",
+        ],
+        "engine": "pydatalog",
+        "stage_names": ["load_data", "analyze_spending_by_supplier"],
+    },
     "pipeline_06_deteccion_completa": {
         "title": "Detección Completa de Fraude (PyDatalog + Prolog)",
         "description": (

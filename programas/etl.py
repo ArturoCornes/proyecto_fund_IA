@@ -67,6 +67,38 @@ CREATE INDEX IF NOT EXISTS idx_estado     ON compras(estado);
 CREATE INDEX IF NOT EXISTS idx_ocid       ON compras(ocid);
 """
 
+# Tasas de cambio a UYU — valores de referencia promedio 2025.
+# Actualizar si se incorporan datos de otros periodos.
+TASAS_A_UYU = {
+    "UYU": 1.0,
+    "USD": 43.0,
+    "EUR": 47.0,
+    "BRL": 8.5,
+    "UYI": 5.8,   # Unidad Indexada uruguaya
+}
+
+
+def normalizar_moneda(df: pd.DataFrame) -> pd.DataFrame:
+    """Convierte todos los montos a UYU usando TASAS_A_UYU.
+
+    Filas con moneda desconocida o vacía tienen su monto anulado para evitar
+    que valores heterogéneos entren en agregaciones posteriores.
+    """
+    tasa = df["moneda"].map(TASAS_A_UYU)
+
+    sin_tasa = tasa.isna() & df["monto"].notna()
+    if sin_tasa.any():
+        desconocidas = df.loc[sin_tasa, "moneda"].value_counts().to_dict()
+        print(f"[AVISO] Monto anulado en {sin_tasa.sum()} filas con moneda desconocida: {desconocidas}")
+        df.loc[sin_tasa, "monto"] = pd.NA
+
+    convertidas = tasa.notna() & (df["moneda"] != "UYU") & df["monto"].notna()
+    df.loc[convertidas, "monto"] = (df.loc[convertidas, "monto"] * tasa[convertidas]).round(2)
+    df.loc[tasa.notna(), "moneda"] = "UYU"
+
+    print(f"[OK] Moneda normalizada: {convertidas.sum()} filas convertidas a UYU")
+    return df
+
 
 def crear_base(ruta_db: str) -> sqlite3.Connection:
     """Crea/verifica la base SQLite y actualiza columnas nuevas si hace falta."""
@@ -158,6 +190,9 @@ def limpiar_datos(df: pd.DataFrame) -> pd.DataFrame:
 
     if "monto" in df.columns:
         df["monto"] = pd.to_numeric(df["monto"], errors="coerce")
+
+    if {"monto", "moneda"} <= set(df.columns):
+        df = normalizar_moneda(df)
 
     for col in ["fecha_licitacion", "fecha_adjudicacion"]:
         if col in df.columns:

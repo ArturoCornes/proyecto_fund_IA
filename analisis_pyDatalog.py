@@ -331,3 +331,18 @@ promedio_general_tiempo_adjudicaciones(PromedioGeneral) <= (
     (C > 0) &
     (PromedioGeneral == S / C)
 )
+
+#region 13) Gasto total por proveedor
+
+pyDatalog.create_terms('''
+X, P, M,
+gasto_total_proveedor
+''')
+
+(gasto_total_proveedor[P] == sum_(M, for_each=X)) <= (
+    (proveedor_de[X] == P) &
+    (monto_de[X] == M) &
+    (M != None)
+)
+
+#endregion
