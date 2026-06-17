@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UY-CompraTracker — Panel de Análisis Simbólico</title>
+    <meta name="description" content="Dashboard de análisis simbólico de compras públicas del Uruguay. Detecta patrones, concentración y posibles irregularidades mediante motores lógicos.">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -20,6 +21,78 @@
     </header>
 
     <main class="container">
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECCIÓN: ORGANISMOS GUBERNAMENTALES (BURBUJAS)
+        ═══════════════════════════════════════════════════════ -->
+        <section class="organismos-section" id="organismosSection">
+            <div class="organismos-header">
+                <div class="organismos-title-group">
+                    <span class="organismos-icon">🏛️</span>
+                    <div>
+                        <h2 class="organismos-title">Organismos Gubernamentales</h2>
+                        <p class="organismos-subtitle">Haz clic en una entidad para explorar sus proveedores registrados</p>
+                    </div>
+                </div>
+                <button class="btn-load-organismos" id="btnLoadOrganismos" onclick="initOrganismos()">
+                    <span class="btn-load-icon">⚡</span> Cargar Organismos
+                </button>
+            </div>
+
+            <!-- Arena de burbujas -->
+            <div class="bubble-arena" id="bubbleArena">
+                <div class="bubble-placeholder" id="bubblePlaceholder">
+                    <div class="placeholder-icon">🏛️</div>
+                    <p>Presiona <strong>Cargar Organismos</strong> para visualizar las entidades del Estado</p>
+                </div>
+            </div>
+
+            <!-- Panel de proveedores (se abre al hacer clic en una burbuja) -->
+            <div class="providers-panel hidden" id="providersPanel">
+                <div class="providers-panel-header">
+                    <div class="providers-panel-title-row">
+                        <span class="providers-org-icon">🏛️</span>
+                        <div>
+                            <h3 class="providers-org-name" id="providersOrgName">—</h3>
+                            <span class="providers-count" id="providersCount"></span>
+                        </div>
+                    </div>
+                    <button class="btn-close-panel" id="btnClosePanel" onclick="closeProvidersPanel()" title="Cerrar panel">✕</button>
+                </div>
+
+                <div class="providers-search-bar">
+                    <input
+                        type="text"
+                        id="providerSearchInput"
+                        class="provider-search-input"
+                        placeholder="🔍  Buscar proveedor..."
+                        oninput="filterProviders(this.value)"
+                    />
+                </div>
+
+                <div class="providers-list" id="providersList"></div>
+
+                <!-- Tarjeta de monto (se abre al hacer clic en un proveedor) -->
+                <div class="money-card hidden" id="moneyCard">
+                    <div class="money-card-inner">
+                        <button class="money-card-close" onclick="closeMoneyCard()">✕</button>
+                        <div class="money-card-icon">💰</div>
+                        <p class="money-card-label">Monto recibido de</p>
+                        <p class="money-card-org" id="moneyCardOrg"></p>
+                        <p class="money-card-provider" id="moneyCardProvider"></p>
+                        <div class="money-card-amount" id="moneyCardAmount">—</div>
+                        <p class="money-card-currency">UYU (Pesos Uruguayos)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECCIÓN: GRID DE PIPELINES
+        ═══════════════════════════════════════════════════════ -->
+        <div class="section-divider">
+            <span>Pipelines de Análisis Simbólico</span>
+        </div>
         <section class="pipeline-grid" id="pipelineGrid"></section>
 
         <section class="results-section hidden" id="resultsSection">
@@ -41,6 +114,12 @@
     <div class="loading-overlay hidden" id="loadingOverlay">
         <div class="spinner"></div>
         <p>Ejecutando pipeline...</p>
+    </div>
+
+    <!-- Loading overlay específico para organismos -->
+    <div class="loading-overlay hidden" id="organismoLoadingOverlay">
+        <div class="spinner"></div>
+        <p id="organismoLoadingText">Cargando organismos...</p>
     </div>
 
     <div class="toast hidden" id="errorToast"></div>

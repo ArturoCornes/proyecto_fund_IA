@@ -16,6 +16,7 @@ Usage:
 import importlib
 import os
 import sys
+import urllib.parse
 from datetime import datetime
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +26,12 @@ if PROJECT_ROOT not in sys.path:
 from flask import Flask, jsonify, render_template
 
 app = Flask(__name__)
+
+# ---------------------------------------------------------------------------
+# Cache for pipeline_08 results (organismos / proveedores / montos)
+# Populated lazily on first request to /api/organismos
+# ---------------------------------------------------------------------------
+_organismos_cache = None  # dict: { organismo_name -> { proveedor_name -> monto|None } }
 
 
 PIPELINE_REGISTRY = {
@@ -112,6 +119,20 @@ PIPELINE_REGISTRY = {
         "engine": "pydatalog",
         "stage_names": ["load_data", "analyze_spending_by_supplier"],
     },
+    "pipeline_08_proveedores_por_organismo": {
+        "title": "Proveedores por Organismo Gubernamental",
+        "description": (
+            "Lista todos los proveedores registrados para cada organismo del Estado "
+            "y calcula el monto total que cada proveedor recibió de dicho organismo. "
+            "Base de la visualización interactiva de burbujas."
+        ),
+        "rules": [
+            "proveedor_organismo(O, P) — Pares únicos organismo-proveedor (regla 14)",
+            "monto_proveedor_organismo[O, P] == M — Monto total por par org-proveedor (regla 10)",
+        ],
+        "engine": "pydatalog",
+        "stage_names": ["load_data", "proveedores_por_organismo"],
+    },
     "pipeline_06_deteccion_completa": {
         "title": "Detección Completa de Fraude (PyDatalog + Prolog)",
         "description": (
@@ -190,6 +211,107 @@ def _run_pipeline_module(pipeline_id):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+# ---------------------------------------------------------------------------
+# Helper: load pipeline_08 data into the cache
+# ---------------------------------------------------------------------------
+def _load_organismos_cache():
+    global _organismos_cache
+    if _organismos_cache is not None:
+        return _organismos_cache, None   # already loaded
+
+    try:
+        mod = importlib.import_module("pipeline_08_proveedores_por_organismo")
+        results = mod.run()
+    except Exception as exc:
+        return None, str(exc)
+
+    # results[-1] is the analysis stage KnowledgeSet
+    analysis_ks = results[-1] if results else None
+    if analysis_ks is None:
+        return None, "Pipeline did not return results"
+
+    data = {}  # { organismo -> { proveedor -> monto } }
+
+    for pred, rows in analysis_ks.facts.items():
+        if pred.startswith("proveedor_organismo"):
+            # rows: [ [organismo, proveedor], ... ]
+            for row in rows:
+                if isinstance(row, (list, tuple)) and len(row) >= 2:
+                    org, prov = str(row[0]), str(row[1])
+                    if org not in data:
+                        data[org] = {}
+                    if prov not in data[org]:
+                        data[org][prov] = None
+
+        elif pred.startswith("monto_proveedor_organismo"):
+            # rows: [ [organismo, proveedor, monto], ... ]
+            for row in rows:
+                if isinstance(row, (list, tuple)) and len(row) >= 3:
+                    org, prov, monto = str(row[0]), str(row[1]), row[2]
+                    if org not in data:
+                        data[org] = {}
+                    data[org][prov] = monto
+
+    _organismos_cache = data
+    return data, None
+
+
+# ---------------------------------------------------------------------------
+# New endpoints for the bubble visualisation
+# ---------------------------------------------------------------------------
+
+@app.route("/api/organismos", methods=["GET"])
+def list_organismos():
+    """Return all government entities with provider count."""
+    data, err = _load_organismos_cache()
+    if err:
+        return jsonify({"error": err}), 500
+
+    result = [
+        {"nombre": org, "cantidad_proveedores": len(provs)}
+        for org, provs in data.items()
+    ]
+    result.sort(key=lambda x: x["cantidad_proveedores"], reverse=True)
+    return jsonify(result)
+
+
+@app.route("/api/organismos/<path:organismo>/proveedores", methods=["GET"])
+def list_proveedores(organismo):
+    """Return all providers registered to a given government entity."""
+    organismo = urllib.parse.unquote(organismo)
+    data, err = _load_organismos_cache()
+    if err:
+        return jsonify({"error": err}), 500
+
+    if organismo not in data:
+        return jsonify({"error": f"Organismo '{organismo}' no encontrado."}), 404
+
+    provs = data[organismo]
+    result = [
+        {"nombre": prov, "monto": monto}
+        for prov, monto in provs.items()
+    ]
+    result.sort(key=lambda x: (x["monto"] or 0), reverse=True)
+    return jsonify({"organismo": organismo, "proveedores": result})
+
+
+@app.route("/api/gasto/<path:organismo>/<path:proveedor>", methods=["GET"])
+def get_gasto(organismo, proveedor):
+    """Return how much a provider received from a specific government entity."""
+    organismo = urllib.parse.unquote(organismo)
+    proveedor = urllib.parse.unquote(proveedor)
+    data, err = _load_organismos_cache()
+    if err:
+        return jsonify({"error": err}), 500
+
+    monto = data.get(organismo, {}).get(proveedor)
+    return jsonify({
+        "organismo": organismo,
+        "proveedor": proveedor,
+        "monto": monto,
+    })
 
 
 @app.route("/api/pipelines", methods=["GET"])
