@@ -347,7 +347,7 @@ gasto_total_proveedor
 
 #endregion
 
-#region 13) Proveedores por organizacion
+#region 14) Proveedores por organizacion
 pyDatalog.create_terms('''
 X, O, P,
 proveedor_organismo
