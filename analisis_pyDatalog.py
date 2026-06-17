@@ -346,3 +346,21 @@ gasto_total_proveedor
 )
 
 #endregion
+
+#region 13) Proveedores por organizacion
+pyDatalog.create_terms('''
+X, O, P,
+proveedor_organismo
+''')
+
+proveedor_organismo(O, P) <= (
+    (organismo_de[X] == O) &
+    (proveedor_de[X] == P) &
+    (P != 'NAN')
+)
+
+print(proveedor_organismo(O, P))
+
+#endregion
+
+
